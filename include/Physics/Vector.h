@@ -2,20 +2,14 @@
 #define VECTOR_H
 
 class Vec2{
-private:
-	float x,y;
 public:
+	float x,y;
+	
 	//construcors & destructors
 	Vec2();
 	Vec2(float x, float y);
 	Vec2(const Vec2& v);
 	~Vec2() = default;
-
-	//getters and setters
-	float get_x();
-	float get_y();
-	void set_x(float x);
-	void set_y(float y);
 	
 	//methods
 	float magnitude() const;

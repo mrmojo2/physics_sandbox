@@ -1,5 +1,5 @@
 build:
-	g++ -Wall -I ./include ./src/*cpp -lSDL2 -o ./bin/sim
+	g++ -Wall -I ./include -I ./include/Physics ./src/*cpp ./src/Physics/*cpp -lSDL2 -lSDL2_gfx -o ./bin/sim
 run:
 	./bin/sim
 clean:
