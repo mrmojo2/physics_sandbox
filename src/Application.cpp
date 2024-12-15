@@ -12,7 +12,7 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 
-	particle = new Particle(0,0,5);
+	particle = new Particle(10,10,5);
 }
 
 void Application::input(){
@@ -31,15 +31,19 @@ void Application::input(){
 }
 void Application::update(){
 	//maintain constant fps
-	static int  previousFrameTime;
+	static int  previousFrameTime; 
 	int delay = MILLISECONDS_PER_FRAME - (SDL_GetTicks()-previousFrameTime);
-	if(delay>0){				//for the first iteration since previousFrameTime = 0 the delay will be negative!
+	if(delay>0){				//a frame loop might take more than MILLISECONDS_PER_FRAME in this case the delay value is negative
 		SDL_Delay(delay);
 	}
 	
-	previousFrameTime = SDL_GetTicks();	
+	//delta time: difference between the current frame and the last frame in seconds
+	float deltaTime = MILLISECONDS_PER_FRAME/1000.0f;
+	
+	previousFrameTime = SDL_GetTicks();
 
-	particle->velocity = Vec2(5,5);
+
+	particle->velocity = Vec2(100,0) * deltaTime;
 	particle->position += particle->velocity;	
 }
 void Application::render(){
