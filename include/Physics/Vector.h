@@ -31,8 +31,8 @@ public:
 	bool operator  == (const Vec2& v) const;
 	bool operator  != (const Vec2& v) const;
 
-	//Vec2& operator += (const Vec2& v);
-	//Vec2& operator -= (const Vec2& v);
+	Vec2& operator += (const Vec2& v);
+	Vec2& operator -= (const Vec2& v);
 	
 	friend float cross(const Vec2& v1, const Vec2& v2);
 };

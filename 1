@@ -1,9 +1,5 @@
 #include "Application.h"
 #include "Graphics.h"
-#include "Constants.h"
-
-#include <iostream>
-#include <stdint.h>
 
 bool Application::isRunning(){
 	return running;
@@ -12,7 +8,7 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 
-	particle = new Particle(0,0,5);
+	particle = new Particle(20,30,5);
 }
 
 void Application::input(){
@@ -30,17 +26,7 @@ void Application::input(){
 	}
 }
 void Application::update(){
-	//maintain constant fps
-	static int  previousFrameTime;
-	int delay = MILLISECONDS_PER_FRAME - (SDL_GetTicks()-previousFrameTime);
-	if(delay>0){				//for the first iteration since previousFrameTime = 0 the delay will be negative!
-		SDL_Delay(delay);
-	}
-	
-	previousFrameTime = SDL_GetTicks();	
-
-	particle->velocity = Vec2(5,5);
-	particle->position += particle->velocity;	
+	particle->position += particle->velocity();	
 }
 void Application::render(){
 	Graphics::ClearScreen(0xFF056263);

@@ -87,6 +87,16 @@ bool Vec2::operator != (const Vec2& v) const {
 }
 
 
+Vec2& Vec2::operator += (const Vec2& v){
+	x+=v.x;
+	y+=v.y;
+	return *this;
+}
+Vec2& Vec2::operator -= (const Vec2& v){
+	x-=v.x;
+	y-=v.y;
+	return *this;
+}
 
 float cross(const Vec2& v1, const Vec2& v2) {
   	return (v1.x * v2.y - v1.y * v2.x);
