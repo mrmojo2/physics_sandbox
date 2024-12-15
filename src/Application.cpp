@@ -12,7 +12,9 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 
-	particle = new Particle(10,10,5);
+	particle = new Particle(50,25,5);
+	particle->acceleration = Vec2(0.0,9.8*PIXELS_PER_METER);
+	particle->velocity = Vec2(200,0);
 }
 
 void Application::input(){
@@ -33,22 +35,42 @@ void Application::update(){
 	//maintain constant fps
 	static int  previousFrameTime; 
 	int delay = MILLISECONDS_PER_FRAME - (SDL_GetTicks()-previousFrameTime);
-	if(delay>0){				//a frame loop might take more than MILLISECONDS_PER_FRAME in this case the delay value is negative
+	if(delay>0){				//delay can be negative if a frame loop take more time than MILLISECONDS_PER_FRAME
 		SDL_Delay(delay);
 	}
 	
 	//delta time: difference between the current frame and the last frame in seconds
-	float deltaTime = MILLISECONDS_PER_FRAME/1000.0f;
+	//used to implement fps independant movement
+	float deltaTime = (SDL_GetTicks() - previousFrameTime)/1000.0f;
+	if(deltaTime > MILLISECONDS_PER_FRAME/1000.0f){
+		deltaTime = MILLISECONDS_PER_FRAME/1000.0f;
+	}	
+
+	//set time of this frame to be used in the next frame
+	previousFrameTime = SDL_GetTicks();	
+
+	particle->velocity += particle->acceleration * deltaTime;
+	particle->position += particle->velocity * deltaTime;
+
 	
-	previousFrameTime = SDL_GetTicks();
-
-
-	particle->velocity = Vec2(100,0) * deltaTime;
-	particle->position += particle->velocity;	
+	if((particle->position.y > (Graphics::windowHeight - Particle::radius))){
+		particle->position.y = Graphics::windowHeight - Particle::radius;	//putting particle on the edges if it exceds
+		particle->velocity.y *= -0.9;						//making the collision not perfectly elastic
+	}else if(particle->position.y < (0 + Particle::radius)){
+		particle->position.y = Particle::radius;
+		particle->velocity.y *= -0.9;
+	}
+	if(particle->position.x > (Graphics::windowWidth - Particle::radius)){
+		particle->position.x = Graphics::windowWidth - Particle::radius;	//putting particle on the edges if it exceds
+		particle->velocity.x *= -0.9;						//making the collision not perfectly elastic
+	}else if(particle->position.x < (0 + Particle::radius)){
+		particle->position.x = Particle::radius;
+		particle->velocity.x *= -0.9;
+	}	
 }
 void Application::render(){
 	Graphics::ClearScreen(0xFF056263);
-	Graphics::DrawFillCircle(particle->position.x,particle->position.y,4,0xffffffff);
+	Graphics::DrawFillCircle(particle->position.x,particle->position.y,Particle::radius,0xffffffff);
 	Graphics::RenderFrame();	
 }
 void Application::destroy(){

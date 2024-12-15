@@ -5,6 +5,8 @@
 
 class Particle{
 public:
+	static int radius;
+	
 	Vec2 position;
 	Vec2 velocity;
 	Vec2 acceleration;
