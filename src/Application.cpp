@@ -12,9 +12,12 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 
-	particle = new Particle(50,25,5);
-	particle->acceleration = Vec2(0.0,9.8*PIXELS_PER_METER);
-	particle->velocity = Vec2(200,0);
+	Particle* particle1 = new Particle(50,25,5);
+	Particle* particle2 = new Particle(200,25,20);
+
+	particles.push_back(particle1);
+	particles.push_back(particle2);
+
 }
 
 void Application::input(){
@@ -47,33 +50,50 @@ void Application::update(){
 	}	
 
 	//set time of this frame to be used in the next frame
-	previousFrameTime = SDL_GetTicks();	
-
-	particle->velocity += particle->acceleration * deltaTime;
-	particle->position += particle->velocity * deltaTime;
+	previousFrameTime = SDL_GetTicks();
 
 	
-	if((particle->position.y > (Graphics::windowHeight - Particle::radius))){
-		particle->position.y = Graphics::windowHeight - Particle::radius;	//putting particle on the edges if it exceds
-		particle->velocity.y *= -0.9;						//making the collision not perfectly elastic
-	}else if(particle->position.y < (0 + Particle::radius)){
-		particle->position.y = Particle::radius;
-		particle->velocity.y *= -0.9;
+	//apply forces to the particles
+	for(auto particle:particles){
+		//weight force
+		particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
+		//wind force
+		particle->addForce(Vec2(100,0.0));
+
 	}
-	if(particle->position.x > (Graphics::windowWidth - Particle::radius)){
-		particle->position.x = Graphics::windowWidth - Particle::radius;	//putting particle on the edges if it exceds
-		particle->velocity.x *= -0.9;						//making the collision not perfectly elastic
-	}else if(particle->position.x < (0 + Particle::radius)){
-		particle->position.x = Particle::radius;
-		particle->velocity.x *= -0.9;
+	
+	//perform integration
+	for(auto particle: particles){
+		particle->integrate(deltaTime);
 	}	
+
+	//window boundary
+	for(auto particle:particles){
+		if((particle->position.y > (Graphics::windowHeight - particle->radius))){
+			particle->position.y = Graphics::windowHeight - particle->radius;	//putting particle on the edges if it exceds
+			particle->velocity.y *= -0.9;						//making the collision not perfectly elastic
+		}else if(particle->position.y < (0 + particle->radius)){
+			particle->position.y = particle->radius;
+			particle->velocity.y *= -0.9;
+		}
+		if(particle->position.x > (Graphics::windowWidth - particle->radius)){
+			particle->position.x = Graphics::windowWidth - particle->radius;	//putting particle on the edges if it exceds
+			particle->velocity.x *= -0.9;						//making the collision not perfectly elastic
+		}else if(particle->position.x < (0 + particle->radius)){
+			particle->position.x = particle->radius;
+			particle->velocity.x *= -0.9;
+		}	
+	}
 }
 void Application::render(){
 	Graphics::ClearScreen(0xFF056263);
-	Graphics::DrawFillCircle(particle->position.x,particle->position.y,Particle::radius,0xffffffff);
+	for(auto particle:particles)
+		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
 	Graphics::RenderFrame();	
 }
 void Application::destroy(){
-	delete particle;
+	for(auto particle:particles){
+		delete particle;
+	}
 	Graphics::CloseWindow();
 }
