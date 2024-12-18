@@ -2,11 +2,12 @@
 
 
 Particle::Particle(int x, int y, float mass):position(Vec2(x,y)),mass(mass){
-	radius = 5 * mass/10;
+	radius = mass;
+	invMass = 1/mass;
 }
 
 void Particle::integrate(float dt){
-	acceleration = netForce/mass;
+	acceleration = netForce * invMass;
 
 	velocity += acceleration * dt;
 	position += velocity * dt;

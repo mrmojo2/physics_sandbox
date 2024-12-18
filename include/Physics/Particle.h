@@ -11,6 +11,7 @@ public:
 	Vec2 acceleration;
 	Vec2 netForce=Vec2(0.0,0.0);
 	float mass;
+	float invMass;
 
 	void integrate(float dt);		//performs euler integration
 	void addForce(const Vec2& f);

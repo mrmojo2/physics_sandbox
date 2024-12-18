@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Graphics.h"
 #include "Constants.h"
+#include "Force.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -12,11 +13,16 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 
+	fluid.x = 0;
+	fluid.y = Graphics::windowHeight/2;
+	fluid.w = Graphics::windowWidth;
+	fluid.h = Graphics::windowHeight/2;
+
 	Particle* particle1 = new Particle(50,25,5);
-	Particle* particle2 = new Particle(200,25,20);
+	//Particle* particle2 = new Particle(200,25,20);
 
 	particles.push_back(particle1);
-	particles.push_back(particle2);
+	//particles.push_back(particle2);
 
 }
 
@@ -30,6 +36,24 @@ void Application::input(){
 			case SDL_KEYDOWN:
 				if(event.key.keysym.sym == SDLK_ESCAPE)
 					running = false;
+				if(event.key.keysym.sym == SDLK_UP)
+					pushForce.y = -100*PIXELS_PER_METER;
+				if(event.key.keysym.sym == SDLK_DOWN)
+					pushForce.y = 100*PIXELS_PER_METER;
+				if(event.key.keysym.sym == SDLK_LEFT)
+					pushForce.x = -100*PIXELS_PER_METER;
+				if(event.key.keysym.sym == SDLK_RIGHT)
+					pushForce.x = +100*PIXELS_PER_METER;
+				break;
+			case SDL_KEYUP:
+				if(event.key.keysym.sym == SDLK_UP)
+					pushForce.y = 0;
+				if(event.key.keysym.sym == SDLK_DOWN)
+					pushForce.y = 0;
+				if(event.key.keysym.sym == SDLK_LEFT)
+					pushForce.x = 0;
+				if(event.key.keysym.sym == SDLK_RIGHT)
+					pushForce.x = 0;
 				break;
 		}
 	}
@@ -59,7 +83,13 @@ void Application::update(){
 		particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
 		//wind force
 		particle->addForce(Vec2(100,0.0));
-
+		//pushForce from keyboard
+		particle->addForce(pushForce);
+		//drag force from fluid
+		if(particle->position.y > fluid.y){
+			Vec2 dragForce = Force::getDragForce(*particle , 0.0075);
+			particle->addForce(dragForce);
+		}
 	}
 	
 	//perform integration
@@ -86,9 +116,15 @@ void Application::update(){
 	}
 }
 void Application::render(){
-	Graphics::ClearScreen(0xFF056263);
+	Graphics::ClearScreen(0xFFa9afb0);
+
+	//render the fluid
+	Graphics::DrawFillRect(fluid.x + fluid.w/2,fluid.y + fluid.h/2 , fluid.w, fluid.h, 0xffb86914);
+
+	//render the particcles
 	for(auto particle:particles)
 		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
+	
 	Graphics::RenderFrame();	
 }
 void Application::destroy(){
