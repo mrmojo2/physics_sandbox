@@ -7,12 +7,17 @@
 #include <vector>
 #include <SDL2/SDL.h>
 
+
 class Application{
 private:
 	bool running = false;
 	std::vector<Particle*> particles;
 	Vec2 pushForce = Vec2(0,0);
 	SDL_Rect fluid;
+	Vec2 mousePos;
+	bool drawImpactLine = false;
+	int impactParticleIndex;
+
 public:
 	Application() = default;
 	~Application() = default;

@@ -1,8 +1,9 @@
 #include "Particle.h"
 
+#include <algorithm>
 
 Particle::Particle(int x, int y, float mass):position(Vec2(x,y)),mass(mass){
-	radius = mass;
+	radius = std::clamp((int)mass,5,20);
 	invMass = 1/mass;
 }
 
