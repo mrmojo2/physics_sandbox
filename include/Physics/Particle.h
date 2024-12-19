@@ -16,6 +16,7 @@ public:
 	void integrate(float dt);		//performs euler integration
 	void addForce(const Vec2& f);
 	
+	Particle();
 	Particle(int x, int y, float mass);
 };
 

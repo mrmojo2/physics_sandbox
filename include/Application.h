@@ -2,6 +2,7 @@
 #define APPLICATION
 
 #include "Particle.h"
+#include "Spring.h"
 #include "Vector.h"
 
 #include <vector>
@@ -12,11 +13,13 @@ class Application{
 private:
 	bool running = false;
 	std::vector<Particle*> particles;
-	Vec2 pushForce = Vec2(0,0);
-	SDL_Rect fluid;
-	Vec2 mousePos;
-	bool drawImpactLine = false;
-	int impactParticleIndex;
+	std::vector<Spring*> springs;
+	Vec2 pushForce = Vec2(0,0);		//to give a force through keyboard
+	Vec2 mousePos = Vec2(0,0);		
+	SDL_Rect fluid;				//to render a fluid in the screen
+	
+	bool drawMouseImpulseLine = false;		//to give a force to a particle using mouse
+	int mouseImpulseParticleIndex;
 
 public:
 	Application() = default;

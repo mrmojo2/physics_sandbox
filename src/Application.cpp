@@ -18,11 +18,19 @@ void Application::setup(){
 	fluid.w = Graphics::windowWidth;
 	fluid.h = Graphics::windowHeight/2;
 
-	Particle* particle_small = new Particle(100,200,1);
+	/*Particle* particle_small = new Particle(100,200,1);
 	Particle* particle_big = new Particle(500,500,20);
 
 	particles.push_back(particle_small);
-	particles.push_back(particle_big);
+	particles.push_back(particle_big);*/
+
+	Spring* spring1= new Spring(Vec2(500,200), 200, 10);
+	springs.push_back(spring1);
+	particles.push_back(&(spring1->bob));
+
+	Spring* spring2= new Spring(Vec2(700,200), 200, 50);
+	springs.push_back(spring2);
+	particles.push_back(&(spring2->bob));
 
 }
 
@@ -68,8 +76,8 @@ void Application::input(){
 					for(int i=0;i<particles.size();i++){
 						if( (curMouseX > particles[i]->position.x - (particles[i]->radius+5)) && (curMouseX < particles[i]->position.x + (particles[i]->radius+5)) && 
 						    (curMouseY > particles[i]->position.y - (particles[i]->radius+5)) && (curMouseY < particles[i]->position.y + (particles[i]->radius+5)) ){
-							drawImpactLine = true;
-							impactParticleIndex = i;
+							drawMouseImpulseLine = true;
+							mouseImpulseParticleIndex = i;
 						}
 					}
 					buttonDownTime = SDL_GetTicks();
@@ -80,14 +88,14 @@ void Application::input(){
 			case SDL_MOUSEBUTTONUP:
 				if(event.button.button == SDL_BUTTON_LEFT){
 					buttonUpTime = SDL_GetTicks();
-					if(drawImpactLine){
-						drawImpactLine = false;
-						Vec2 impulseDir = (particles[impactParticleIndex]->position - mousePos).unit();
-						float impulseMag = (particles[impactParticleIndex]->position - mousePos).magnitude();
-						particles[impactParticleIndex]->velocity = impulseDir*impulseMag;
+					if(drawMouseImpulseLine){
+						drawMouseImpulseLine = false;
+						Vec2 impulseDir = (particles[mouseImpulseParticleIndex]->position - mousePos).unit();
+						float impulseMag = (particles[mouseImpulseParticleIndex]->position - mousePos).magnitude();
+						particles[mouseImpulseParticleIndex]->velocity = impulseDir*impulseMag;
 					}else{
-						Particle* p = new Particle(event.motion.x, event.motion.y, (buttonUpTime-buttonDownTime)/50);
-						particles.push_back(p);
+						//Particle* p = new Particle(event.motion.x, event.motion.y, (buttonUpTime-buttonDownTime)/50);
+						//particles.push_back(p);
 					}
 				}
 				break;
@@ -124,21 +132,22 @@ void Application::update(){
 		//pushForce from keyboard
 		particle->addForce(pushForce);
 		
-		//frictional force (assuming topdown like a pool table and not dependant on normal force)
-		Vec2 friction = Force::getFrictionalForce(*particle, 5);
-		particle->addForce(friction);
+		//drag force
+		Vec2 drag = Force::getDragForce(*particle, 0.005);
+		particle->addForce(drag);
 
-		//drag force from fluid
-		if(particle->position.y > fluid.y){
-			Vec2 dragForce = Force::getDragForce(*particle , 0.01);
-			particle->addForce(dragForce);
-		}
+	}
+
+	//apply spring force to spring bobs
+	for(auto spring:springs){
+		Vec2 springForce = Force::getSpringForce(*spring);
+		spring->bob.addForce(springForce);
 	}
 	
 	//apply gravitational force to the first two particles
-	Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
+	/*Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
 	particles[0]->addForce(-gravitationalForce);
-	particles[1]->addForce(gravitationalForce);
+	particles[1]->addForce(gravitationalForce);*/
 
 	
 	//perform integration
@@ -165,25 +174,33 @@ void Application::update(){
 	}
 }
 void Application::render(){
-	Graphics::ClearScreen(0xFFa9afb0);
+	Graphics::ClearScreen(0xFF112233);
 
 	//render the fluid
-	Graphics::DrawFillRect(fluid.x + fluid.w/2,fluid.y + fluid.h/2 , fluid.w, fluid.h, 0xffb86914);
+	//Graphics::DrawFillRect(fluid.x + fluid.w/2,fluid.y + fluid.h/2 , fluid.w, fluid.h, 0xffb86914);
 	
 
-	if(drawImpactLine){
-		Graphics::DrawLine(particles[impactParticleIndex]->position.x, particles[impactParticleIndex]->position.y, mousePos.x, mousePos.y, 0xff0000ff);
+	if(drawMouseImpulseLine){
+		Graphics::DrawLine(particles[mouseImpulseParticleIndex]->position.x, particles[mouseImpulseParticleIndex]->position.y, mousePos.x, mousePos.y, 0xff0000ff);
 	}
 
 	//render the particcles
 	for(auto particle:particles)
 		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
+	//render springs
+	for(auto spring:springs){
+		Graphics::DrawFillCircle(spring->anchor.x, spring->anchor.y,spring->bob.radius,0xff0011e3);
+		Graphics::DrawLine(spring->anchor.x, spring->anchor.y,spring->bob.position.x, spring->bob.position.y,0xffffffff);
+	}	
 	
 	Graphics::RenderFrame();	
 }
 void Application::destroy(){
 	for(auto particle:particles){
 		delete particle;
+	}
+	for(auto spring:springs){
+		delete spring;
 	}
 	Graphics::CloseWindow();
 }
