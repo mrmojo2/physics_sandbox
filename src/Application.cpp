@@ -24,13 +24,15 @@ void Application::setup(){
 	particles.push_back(particle_small);
 	particles.push_back(particle_big);*/
 
-	Spring* spring1= new Spring(Vec2(500,200), 200, 10);
-	springs.push_back(spring1);
-	particles.push_back(&(spring1->bob));
+	Spring* spring1= new Spring(Vec2(500,200), 200, 500);
+	Particle* bob1 = new Particle(spring1->anchor.x,spring1->anchor.y+spring1->eqb_length,5);
+	particles.push_back(bob1);
+	springMassSystems.push_back(SpringMass(spring1,bob1));
 
-	Spring* spring2= new Spring(Vec2(700,200), 200, 50);
-	springs.push_back(spring2);
-	particles.push_back(&(spring2->bob));
+	Spring* spring2= new Spring(Vec2(900,200), 200, 500);
+	Particle* bob2 = new Particle(spring2->anchor.x, spring2->anchor.y+spring2->eqb_length,20);
+	particles.push_back(bob2);
+	springMassSystems.push_back(SpringMass(spring2,bob2));
 
 }
 
@@ -127,23 +129,24 @@ void Application::update(){
 	//apply forces to the particles
 	for(auto particle:particles){
 		//weight force
-		//particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
+		particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
 		
 		//pushForce from keyboard
 		particle->addForce(pushForce);
 		
 		//drag force
-		Vec2 drag = Force::getDragForce(*particle, 0.005);
+		Vec2 drag = Force::getDragForce(*particle, 0.01);
 		particle->addForce(drag);
 
 	}
 
 	//apply spring force to spring bobs
-	for(auto spring:springs){
-		Vec2 springForce = Force::getSpringForce(*spring);
-		spring->bob.addForce(springForce);
+	for(auto sm:springMassSystems){
+		Vec2 springForce = Force::getSpringForce(sm);
+		sm.bob->addForce(springForce);
 	}
-	
+
+
 	//apply gravitational force to the first two particles
 	/*Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
 	particles[0]->addForce(-gravitationalForce);
@@ -188,9 +191,9 @@ void Application::render(){
 	for(auto particle:particles)
 		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
 	//render springs
-	for(auto spring:springs){
-		Graphics::DrawFillCircle(spring->anchor.x, spring->anchor.y,spring->bob.radius,0xff0011e3);
-		Graphics::DrawLine(spring->anchor.x, spring->anchor.y,spring->bob.position.x, spring->bob.position.y,0xffffffff);
+	for(auto sm:springMassSystems){
+		Graphics::DrawFillCircle(sm.sp->anchor.x, sm.sp->anchor.y,2,0xff0011e3);
+		Graphics::DrawLine(sm.sp->anchor.x, sm.sp->anchor.y,sm.bob->position.x, sm.bob->position.y,0xffffffff);
 	}	
 	
 	Graphics::RenderFrame();	
@@ -199,8 +202,8 @@ void Application::destroy(){
 	for(auto particle:particles){
 		delete particle;
 	}
-	for(auto spring:springs){
-		delete spring;
+	for(auto sm:springMassSystems){
+		delete sm.sp;
 	}
 	Graphics::CloseWindow();
 }

@@ -8,9 +8,16 @@ public:
 	Vec2 anchor;
 	float eqb_length;
 	float stiffness;
-	Particle bob;
 
 	Spring(const Vec2& anchor, float eqb_length, float stiffness);
+};
+
+class SpringMass{
+public:
+	Spring* sp;
+	Particle* bob;
+
+	SpringMass(Spring* sp, Particle* bob);
 };
 
 

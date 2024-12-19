@@ -1,5 +1,9 @@
 #include "Spring.h"
 
-Spring::Spring(const Vec2& anchor, float eqb_length, float stiffness) : anchor(anchor), eqb_length(eqb_length), stiffness(stiffness){
-	bob = Particle(anchor.x, anchor.y+eqb_length, 5);	
+Spring::Spring(const Vec2& anchor, float eqb_length, float stiffness) : anchor(anchor), eqb_length(eqb_length), stiffness(stiffness){	
+}
+
+
+
+SpringMass::SpringMass(Spring* sp, Particle* bob):sp(sp),bob(bob){
 }
