@@ -18,21 +18,33 @@ void Application::setup(){
 	fluid.w = Graphics::windowWidth;
 	fluid.h = Graphics::windowHeight/2;
 
+	
+		//planetary motion type shit
 	/*Particle* particle_small = new Particle(100,200,1);
 	Particle* particle_big = new Particle(500,500,20);
 
 	particles.push_back(particle_small);
 	particles.push_back(particle_big);*/
 
-	Spring* spring1= new Spring(Vec2(500,200), 200, 500);
+	
+		//compoud pendulum...kindof
+	/*Spring* spring1= new Spring(Vec2(500,200), 200, 1500);
 	Particle* bob1 = new Particle(spring1->anchor.x,spring1->anchor.y+spring1->eqb_length,5);
 	particles.push_back(bob1);
 	springMassSystems.push_back(SpringMass(spring1,bob1));
 
-	Spring* spring2= new Spring(Vec2(900,200), 200, 500);
-	Particle* bob2 = new Particle(spring2->anchor.x, spring2->anchor.y+spring2->eqb_length,20);
+	Spring* spring2= new Spring(bob1->position, 200, 6000);
+	Particle* bob2 = new Particle(spring2->anchor.x, spring2->anchor.y+spring2->eqb_length,5);
 	particles.push_back(bob2);
-	springMassSystems.push_back(SpringMass(spring2,bob2));
+	springMassSystems.push_back(SpringMass(spring2,bob2));*/
+
+	for(int i=1;i<=3;i++){
+		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i*60),2);
+		Spring*   s = new Spring(Vec2(Graphics::windowWidth/2,100+(i-1)*60),60,5000);
+		springMassSystems.push_back(SpringMass(s,p));
+		particles.push_back(p);
+	}	
+
 
 }
 
@@ -135,18 +147,29 @@ void Application::update(){
 		particle->addForce(pushForce);
 		
 		//drag force
-		Vec2 drag = Force::getDragForce(*particle, 0.01);
-		particle->addForce(drag);
+		Vec2 drag = Force::getDragForce(*particle, 0.0002);
+		//particle->addForce(drag);
 
 	}
 
 	//apply spring force to spring bobs
-	for(auto sm:springMassSystems){
-		Vec2 springForce = Force::getSpringForce(sm);
-		sm.bob->addForce(springForce);
+	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
+	springMassSystems[0].bob->addForce(springForce);
+	for(int i=1;i<springMassSystems.size();i++){
+		Particle* currentBob = springMassSystems[i].bob;
+		Particle* previousBob = springMassSystems[i-1].bob;
+		
+		Vec2 springForce = Force::getSpringForce(springMassSystems[i]);
+		currentBob->addForce(springForce);
+		previousBob->addForce(-springForce);
+
 	}
 
+	
+	
+	//springMassSystems[1].sp->anchor = springMassSystems[0].bob->position;
 
+	
 	//apply gravitational force to the first two particles
 	/*Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
 	particles[0]->addForce(-gravitationalForce);
@@ -156,6 +179,10 @@ void Application::update(){
 	//perform integration
 	for(auto particle: particles){
 		particle->integrate(deltaTime);
+	}
+
+	for(int i=1; i<springMassSystems.size();i++){
+		springMassSystems[i].sp->anchor = springMassSystems[i-1].bob->position;
 	}	
 
 	//window boundary
@@ -187,14 +214,14 @@ void Application::render(){
 		Graphics::DrawLine(particles[mouseImpulseParticleIndex]->position.x, particles[mouseImpulseParticleIndex]->position.y, mousePos.x, mousePos.y, 0xff0000ff);
 	}
 
-	//render the particcles
-	for(auto particle:particles)
-		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
 	//render springs
 	for(auto sm:springMassSystems){
 		Graphics::DrawFillCircle(sm.sp->anchor.x, sm.sp->anchor.y,2,0xff0011e3);
 		Graphics::DrawLine(sm.sp->anchor.x, sm.sp->anchor.y,sm.bob->position.x, sm.bob->position.y,0xffffffff);
 	}	
+	//render the particcles
+	for(auto particle:particles)
+		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
 	
 	Graphics::RenderFrame();	
 }

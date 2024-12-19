@@ -47,7 +47,7 @@ Vec2 Force::getSpringForce(const SpringMass& sm){
 
 	Vec2 direction = l.unit();
 	double magnitude = sm.sp->stiffness * (sm.sp->eqb_length-l.magnitude());
-
 	springForce = direction * magnitude;
+	
 	return springForce;	
 }
