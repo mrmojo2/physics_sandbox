@@ -13,20 +13,19 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 
-	fluid.x = 0;
-	fluid.y = Graphics::windowHeight/2;
-	fluid.w = Graphics::windowWidth;
-	fluid.h = Graphics::windowHeight/2;
 
 	
+#if 0
 		//planetary motion type shit
-	/*Particle* particle_small = new Particle(100,200,1);
+	Particle* particle_small = new Particle(100,200,1);
 	Particle* particle_big = new Particle(500,500,20);
 
 	particles.push_back(particle_small);
-	particles.push_back(particle_big);*/
+	particles.push_back(particle_big);
 
-	
+#endif
+
+#if 0
 		//compound pendulum
 	Vec2* anchor = new Vec2(Graphics::windowWidth/2,100);
 	
@@ -36,15 +35,17 @@ void Application::setup(){
 	springMassSystems.push_back(SpringMass(s1,p1));
 	
 
-	for(int i=0;i<3;i++){
+	for(int i=0;i<2;i++){
 		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i+2)*60,2);
 		Spring* s = new Spring(&(particles[i]->position),60,5000);
 		particles.push_back(p);
 		springMassSystems.push_back(SpringMass(s,p));
-	}	
+	}
+#endif	
 
 
-/*
+#if 1
+ 		//spring box
 	Particle* p1 = new Particle(500,200,5);
 	Particle* p2 = new Particle(700,200,5);
 	Particle* p3 = new Particle(700,400,5);
@@ -70,7 +71,7 @@ void Application::setup(){
 	particles.push_back(p3);
 	particles.push_back(p4);
 
-*/
+#endif
 }
 
 void Application::input(){
@@ -166,18 +167,18 @@ void Application::update(){
 	//apply forces to the particles
 	for(auto particle:particles){
 		//weight force
-		particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
+		//particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
 		
 		//pushForce from keyboard
 		particle->addForce(pushForce);
 		
 		//drag force
-		Vec2 drag = Force::getDragForce(*particle, 0.002);
-		//particle->addForce(drag);
+		Vec2 drag = Force::getDragForce(*particle, 0.02);
+		particle->addForce(drag);
 
 	}
 
-/*
+#if 1
 	//apply spring force to box spring
 	Vec2 springForce;
 
@@ -196,7 +197,9 @@ void Application::update(){
 	particles[3]->addForce(springForce);
 	particles[1]->addForce(-springForce);
 
-*/
+#endif
+
+#if 0
 	//apply spring force to compound pendulum
 	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
 	springMassSystems[0].bob->addForce(springForce);
@@ -209,15 +212,19 @@ void Application::update(){
 		previousBob->addForce(-springForce);
 
 	}
+#endif
 	
 
+#if 0
 	
 	//apply gravitational force to the first two particles
-	/*Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
+	Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
 	particles[0]->addForce(-gravitationalForce);
-	particles[1]->addForce(gravitationalForce);*/
+	particles[1]->addForce(gravitationalForce);
 
-	
+#endif
+
+
 	//perform integration
 	for(auto particle: particles){
 		particle->integrate(deltaTime);
@@ -244,9 +251,6 @@ void Application::update(){
 }
 void Application::render(){
 	Graphics::ClearScreen(0xFF112233);
-
-	//render the fluid
-	//Graphics::DrawFillRect(fluid.x + fluid.w/2,fluid.y + fluid.h/2 , fluid.w, fluid.h, 0xffb86914);
 	
 
 	if(drawMouseImpulseLine){

@@ -16,7 +16,6 @@ private:
 	std::vector<SpringMass> springMassSystems;
 	Vec2 pushForce = Vec2(0,0);		//to give a force through keyboard
 	Vec2 mousePos = Vec2(0,0);		
-	SDL_Rect fluid;				//to render a fluid in the screen
 	
 	bool drawMouseImpulseLine = false;		//to give a force to a particle using mouse
 	int mouseImpulseParticleIndex;
