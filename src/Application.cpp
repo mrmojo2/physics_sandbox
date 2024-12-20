@@ -27,16 +27,6 @@ void Application::setup(){
 	particles.push_back(particle_big);*/
 
 	
-		//compoud pendulum...kindof
-	/*Spring* spring1= new Spring(Vec2(500,200), 200, 1500);
-	Particle* bob1 = new Particle(spring1->anchor.x,spring1->anchor.y+spring1->eqb_length,5);
-	particles.push_back(bob1);
-	springMassSystems.push_back(SpringMass(spring1,bob1));
-
-	Spring* spring2= new Spring(bob1->position, 200, 6000);
-	Particle* bob2 = new Particle(spring2->anchor.x, spring2->anchor.y+spring2->eqb_length,5);
-	particles.push_back(bob2);
-	springMassSystems.push_back(SpringMass(spring2,bob2));*/
 
 	for(int i=1;i<=3;i++){
 		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i*60),2);
