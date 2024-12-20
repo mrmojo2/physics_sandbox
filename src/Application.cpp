@@ -28,18 +28,23 @@ void Application::setup(){
 
 	
 		//compound pendulum
-	/*Vec2 anchor = Vec2(Graphics::windowWidth/2,100);
+	Vec2* anchor = new Vec2(Graphics::windowWidth/2,100);
+	
 	Particle* p1 = new Particle(Graphics::windowWidth/2,100 + 60,2);
-	Spring*   s1 = new Spring(&anchor,60,5000);
+	Spring*   s1 = new Spring(anchor,60,5000);
+	particles.push_back(p1);
+	springMassSystems.push_back(SpringMass(s1,p1));
+	
 
-	for(int i=2;i<=3;i++){
-		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i*60),2);
-		Spring*   s = new Spring(&(p->position),60,5000);
-		springMassSystems.push_back(SpringMass(s,p));
+	for(int i=0;i<3;i++){
+		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i+2)*60,2);
+		Spring* s = new Spring(&(particles[i]->position),60,5000);
 		particles.push_back(p);
-	}*/
+		springMassSystems.push_back(SpringMass(s,p));
+	}	
 
 
+/*
 	Particle* p1 = new Particle(500,200,5);
 	Particle* p2 = new Particle(700,200,5);
 	Particle* p3 = new Particle(700,400,5);
@@ -65,7 +70,7 @@ void Application::setup(){
 	particles.push_back(p3);
 	particles.push_back(p4);
 
-
+*/
 }
 
 void Application::input(){
@@ -161,18 +166,18 @@ void Application::update(){
 	//apply forces to the particles
 	for(auto particle:particles){
 		//weight force
-		//particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
+		particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
 		
 		//pushForce from keyboard
 		particle->addForce(pushForce);
 		
 		//drag force
-		Vec2 drag = Force::getDragForce(*particle, 0.02);
-		particle->addForce(drag);
+		Vec2 drag = Force::getDragForce(*particle, 0.002);
+		//particle->addForce(drag);
 
 	}
 
-
+/*
 	//apply spring force to box spring
 	Vec2 springForce;
 
@@ -191,9 +196,9 @@ void Application::update(){
 	particles[3]->addForce(springForce);
 	particles[1]->addForce(-springForce);
 
-
+*/
 	//apply spring force to compound pendulum
-/*	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
+	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
 	springMassSystems[0].bob->addForce(springForce);
 	for(int i=1;i<springMassSystems.size();i++){
 		Particle* currentBob = springMassSystems[i].bob;
@@ -204,10 +209,7 @@ void Application::update(){
 		previousBob->addForce(-springForce);
 
 	}
-
-*/
 	
-	//springMassSystems[1].sp->anchor = springMassSystems[0].bob->position;
 
 	
 	//apply gravitational force to the first two particles
