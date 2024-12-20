@@ -27,13 +27,43 @@ void Application::setup(){
 	particles.push_back(particle_big);*/
 
 	
+		//compound pendulum
+	/*Vec2 anchor = Vec2(Graphics::windowWidth/2,100);
+	Particle* p1 = new Particle(Graphics::windowWidth/2,100 + 60,2);
+	Spring*   s1 = new Spring(&anchor,60,5000);
 
-	for(int i=1;i<=3;i++){
+	for(int i=2;i<=3;i++){
 		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i*60),2);
-		Spring*   s = new Spring(Vec2(Graphics::windowWidth/2,100+(i-1)*60),60,5000);
+		Spring*   s = new Spring(&(p->position),60,5000);
 		springMassSystems.push_back(SpringMass(s,p));
 		particles.push_back(p);
-	}	
+	}*/
+
+
+	Particle* p1 = new Particle(500,200,5);
+	Particle* p2 = new Particle(700,200,5);
+	Particle* p3 = new Particle(700,400,5);
+	Particle* p4 = new Particle(500,400,5);
+
+	Spring* s1 = new Spring(&(p1->position),200,1000);
+	Spring* s2 = new Spring(&(p2->position),200,1000);
+	Spring* s3 = new Spring(&(p3->position),200,1000);
+	Spring* s4 = new Spring(&(p4->position),200,1000);
+	
+	Spring* s5 = new Spring(&(p1->position),sqrt(200*200+200*200),700);	//diagonal springs
+	Spring* s6 = new Spring(&(p2->position),sqrt(200*200+200*200),700);
+
+	springMassSystems.push_back(SpringMass(s1,p2));
+	springMassSystems.push_back(SpringMass(s2,p3));
+	springMassSystems.push_back(SpringMass(s3,p4));
+	springMassSystems.push_back(SpringMass(s4,p1));
+	springMassSystems.push_back(SpringMass(s5,p3));
+	springMassSystems.push_back(SpringMass(s6,p4));
+
+	particles.push_back(p1);
+	particles.push_back(p2);
+	particles.push_back(p3);
+	particles.push_back(p4);
 
 
 }
@@ -131,19 +161,39 @@ void Application::update(){
 	//apply forces to the particles
 	for(auto particle:particles){
 		//weight force
-		particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
+		//particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
 		
 		//pushForce from keyboard
 		particle->addForce(pushForce);
 		
 		//drag force
-		Vec2 drag = Force::getDragForce(*particle, 0.0002);
-		//particle->addForce(drag);
+		Vec2 drag = Force::getDragForce(*particle, 0.02);
+		particle->addForce(drag);
 
 	}
 
-	//apply spring force to spring bobs
-	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
+
+	//apply spring force to box spring
+	Vec2 springForce;
+
+	for(int i=0; i < 4; i++){
+		springForce = Force::getSpringForce(springMassSystems[i]);
+		particles[i+1 == 4 ? 0:i+1]->addForce(springForce);
+		particles[i]->addForce(-springForce);
+	}
+
+
+	springForce = Force::getSpringForce(springMassSystems[4]);
+	particles[2]->addForce(springForce);
+	particles[0]->addForce(-springForce);
+
+	springForce = Force::getSpringForce(springMassSystems[5]);
+	particles[3]->addForce(springForce);
+	particles[1]->addForce(-springForce);
+
+
+	//apply spring force to compound pendulum
+/*	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
 	springMassSystems[0].bob->addForce(springForce);
 	for(int i=1;i<springMassSystems.size();i++){
 		Particle* currentBob = springMassSystems[i].bob;
@@ -155,7 +205,7 @@ void Application::update(){
 
 	}
 
-	
+*/
 	
 	//springMassSystems[1].sp->anchor = springMassSystems[0].bob->position;
 
@@ -171,9 +221,6 @@ void Application::update(){
 		particle->integrate(deltaTime);
 	}
 
-	for(int i=1; i<springMassSystems.size();i++){
-		springMassSystems[i].sp->anchor = springMassSystems[i-1].bob->position;
-	}	
 
 	//window boundary
 	for(auto particle:particles){
@@ -206,8 +253,8 @@ void Application::render(){
 
 	//render springs
 	for(auto sm:springMassSystems){
-		Graphics::DrawFillCircle(sm.sp->anchor.x, sm.sp->anchor.y,2,0xff0011e3);
-		Graphics::DrawLine(sm.sp->anchor.x, sm.sp->anchor.y,sm.bob->position.x, sm.bob->position.y,0xffffffff);
+		Graphics::DrawFillCircle(sm.sp->anchor->x, sm.sp->anchor->y,2,0xff0011e3);
+		Graphics::DrawLine(sm.sp->anchor->x, sm.sp->anchor->y,sm.bob->position.x, sm.bob->position.y,0xffffffff);
 	}	
 	//render the particcles
 	for(auto particle:particles)

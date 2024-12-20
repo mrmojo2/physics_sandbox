@@ -5,11 +5,11 @@
 
 class Spring{
 public:
-	Vec2 anchor;
+	Vec2 *anchor;
 	float eqb_length;
 	float stiffness;
 
-	Spring(const Vec2& anchor, float eqb_length, float stiffness);
+	Spring(Vec2* anchor, float eqb_length, float stiffness);
 };
 
 class SpringMass{

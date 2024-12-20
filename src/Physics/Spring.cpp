@@ -1,6 +1,6 @@
 #include "Spring.h"
 
-Spring::Spring(const Vec2& anchor, float eqb_length, float stiffness) : anchor(anchor), eqb_length(eqb_length), stiffness(stiffness){	
+Spring::Spring(Vec2* anchor, float eqb_length, float stiffness) : anchor(anchor), eqb_length(eqb_length), stiffness(stiffness){	
 }
 
 
