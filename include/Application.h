@@ -1,7 +1,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION
 
-#include "Particle.h"
+#include "Body.h"
 #include "Spring.h"
 #include "Vector.h"
 
@@ -12,13 +12,13 @@
 class Application{
 private:
 	bool running = false;
-	std::vector<Particle*> particles;
+	std::vector<Body*> bodies;
 	std::vector<SpringMass> springMassSystems;
 	Vec2 pushForce = Vec2(0,0);		//to give a force through keyboard
 	Vec2 mousePos = Vec2(0,0);		
 	
-	bool drawMouseImpulseLine = false;		//to give a force to a particle using mouse
-	int mouseImpulseParticleIndex;
+	bool drawMouseImpulseLine = false;		//to give a force to a body using mouse
+	int mouseImpulseBodyIndex;
 
 public:
 	Application() = default;

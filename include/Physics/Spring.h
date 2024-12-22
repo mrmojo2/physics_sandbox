@@ -1,7 +1,7 @@
 #ifndef SPRING_H
 #define SPRING_H
 
-#include "Particle.h"
+#include "Body.h"
 
 class Spring{
 public:
@@ -15,9 +15,9 @@ public:
 class SpringMass{
 public:
 	Spring* sp;
-	Particle* bob;
+	Body* bob;
 
-	SpringMass(Spring* sp, Particle* bob);
+	SpringMass(Spring* sp, Body* bob);
 };
 
 

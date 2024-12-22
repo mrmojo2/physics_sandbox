@@ -5,5 +5,5 @@ Spring::Spring(Vec2* anchor, float eqb_length, float stiffness) : anchor(anchor)
 
 
 
-SpringMass::SpringMass(Spring* sp, Particle* bob):sp(sp),bob(bob){
+SpringMass::SpringMass(Spring* sp, Body* bob):sp(sp),bob(bob){
 }

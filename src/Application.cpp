@@ -12,66 +12,9 @@ bool Application::isRunning(){
 
 void Application::setup(){
 	running = Graphics::OpenWindow();
-
-
 	
-#if 0
-		//planetary motion type shit
-	Particle* particle_small = new Particle(100,200,1);
-	Particle* particle_big = new Particle(500,500,20);
-
-	particles.push_back(particle_small);
-	particles.push_back(particle_big);
-
-#endif
-
-#if 0
-		//compound pendulum
-	Vec2* anchor = new Vec2(Graphics::windowWidth/2,100);
-	
-	Particle* p1 = new Particle(Graphics::windowWidth/2,100 + 60,2);
-	Spring*   s1 = new Spring(anchor,60,5000);
-	particles.push_back(p1);
-	springMassSystems.push_back(SpringMass(s1,p1));
-	
-
-	for(int i=0;i<2;i++){
-		Particle* p = new Particle(Graphics::windowWidth/2,100 + (i+2)*60,2);
-		Spring* s = new Spring(&(particles[i]->position),60,5000);
-		particles.push_back(p);
-		springMassSystems.push_back(SpringMass(s,p));
-	}
-#endif	
-
-
-#if 1
- 		//spring box
-	Particle* p1 = new Particle(500,200,5);
-	Particle* p2 = new Particle(700,200,5);
-	Particle* p3 = new Particle(700,400,5);
-	Particle* p4 = new Particle(500,400,5);
-
-	Spring* s1 = new Spring(&(p1->position),200,1000);
-	Spring* s2 = new Spring(&(p2->position),200,1000);
-	Spring* s3 = new Spring(&(p3->position),200,1000);
-	Spring* s4 = new Spring(&(p4->position),200,1000);
-	
-	Spring* s5 = new Spring(&(p1->position),sqrt(200*200+200*200),700);	//diagonal springs
-	Spring* s6 = new Spring(&(p2->position),sqrt(200*200+200*200),700);
-
-	springMassSystems.push_back(SpringMass(s1,p2));
-	springMassSystems.push_back(SpringMass(s2,p3));
-	springMassSystems.push_back(SpringMass(s3,p4));
-	springMassSystems.push_back(SpringMass(s4,p1));
-	springMassSystems.push_back(SpringMass(s5,p3));
-	springMassSystems.push_back(SpringMass(s6,p4));
-
-	particles.push_back(p1);
-	particles.push_back(p2);
-	particles.push_back(p3);
-	particles.push_back(p4);
-
-#endif
+	Body* b1 = new Body(Circle(100),500,200,2);
+	bodies.push_back(b1);
 }
 
 void Application::input(){
@@ -109,15 +52,15 @@ void Application::input(){
 				mousePos.y = event.motion.y;
 				break;
 
-			case SDL_MOUSEBUTTONDOWN:{
+			/*case SDL_MOUSEBUTTONDOWN:{
 				int curMouseX = event.motion.x;
 				int curMouseY = event.motion.y;		
 				if(event.button.button == SDL_BUTTON_LEFT){
-					for(int i=0;i<particles.size();i++){
-						if( (curMouseX > particles[i]->position.x - (particles[i]->radius+5)) && (curMouseX < particles[i]->position.x + (particles[i]->radius+5)) && 
-						    (curMouseY > particles[i]->position.y - (particles[i]->radius+5)) && (curMouseY < particles[i]->position.y + (particles[i]->radius+5)) ){
+					for(int i=0;i<bodies.size();i++){
+						if( (curMouseX > bodies[i]->position.x - (bodies[i]->radius+5)) && (curMouseX < bodies[i]->position.x + (bodies[i]->radius+5)) && 
+						    (curMouseY > bodies[i]->position.y - (bodies[i]->radius+5)) && (curMouseY < bodies[i]->position.y + (bodies[i]->radius+5)) ){
 							drawMouseImpulseLine = true;
-							mouseImpulseParticleIndex = i;
+							mouseImpulseBodyIndex = i;
 						}
 					}
 					buttonDownTime = SDL_GetTicks();
@@ -130,15 +73,15 @@ void Application::input(){
 					buttonUpTime = SDL_GetTicks();
 					if(drawMouseImpulseLine){
 						drawMouseImpulseLine = false;
-						Vec2 impulseDir = (particles[mouseImpulseParticleIndex]->position - mousePos).unit();
-						float impulseMag = (particles[mouseImpulseParticleIndex]->position - mousePos).magnitude();
-						particles[mouseImpulseParticleIndex]->velocity = impulseDir*impulseMag;
+						Vec2 impulseDir = (bodies[mouseImpulseBodyIndex]->position - mousePos).unit();
+						float impulseMag = (bodies[mouseImpulseBodyIndex]->position - mousePos).magnitude();
+						bodies[mouseImpulseBodyIndex]->velocity = impulseDir*impulseMag;
 					}else{
-						//Particle* p = new Particle(event.motion.x, event.motion.y, (buttonUpTime-buttonDownTime)/50);
-						//particles.push_back(p);
+						//Body* p = new Body(event.motion.x, event.motion.y, (buttonUpTime-buttonDownTime)/50);
+						//bodies.push_back(p);
 					}
 				}
-				break;
+				break;*/
 				
 
 
@@ -164,89 +107,49 @@ void Application::update(){
 	previousFrameTime = SDL_GetTicks();
 
 	
-	//apply forces to the particles
-	for(auto particle:particles){
+	//apply forces to the bodies
+	for(auto body:bodies){
 		//weight force
-		//particle->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*particle->mass));
+		body->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*body->mass));
 		
 		//pushForce from keyboard
-		particle->addForce(pushForce);
+		body->addForce(pushForce);
 		
 		//drag force
-		Vec2 drag = Force::getDragForce(*particle, 0.02);
-		particle->addForce(drag);
-
-	}
-
-#if 1
-	//apply spring force to box spring
-	Vec2 springForce;
-
-	for(int i=0; i < 4; i++){
-		springForce = Force::getSpringForce(springMassSystems[i]);
-		particles[i+1 == 4 ? 0:i+1]->addForce(springForce);
-		particles[i]->addForce(-springForce);
-	}
-
-
-	springForce = Force::getSpringForce(springMassSystems[4]);
-	particles[2]->addForce(springForce);
-	particles[0]->addForce(-springForce);
-
-	springForce = Force::getSpringForce(springMassSystems[5]);
-	particles[3]->addForce(springForce);
-	particles[1]->addForce(-springForce);
-
-#endif
-
-#if 0
-	//apply spring force to compound pendulum
-	Vec2 springForce = Force::getSpringForce(springMassSystems[0]);
-	springMassSystems[0].bob->addForce(springForce);
-	for(int i=1;i<springMassSystems.size();i++){
-		Particle* currentBob = springMassSystems[i].bob;
-		Particle* previousBob = springMassSystems[i-1].bob;
+		Vec2 drag = Force::getDragForce(*body, 0.002);
+		//body->addForce(drag);
 		
-		Vec2 springForce = Force::getSpringForce(springMassSystems[i]);
-		currentBob->addForce(springForce);
-		previousBob->addForce(-springForce);
-
+		//apply torque
+		body->addTorque(200);
 	}
-#endif
-	
-
-#if 0
-	
-	//apply gravitational force to the first two particles
-	Vec2 gravitationalForce = Force::getGravitationalForce(*particles[0],*particles[1],1000,5,100);
-	particles[0]->addForce(-gravitationalForce);
-	particles[1]->addForce(gravitationalForce);
-
-#endif
 
 
 	//perform integration
-	for(auto particle: particles){
-		particle->integrate(deltaTime);
+	for(auto body: bodies){
+		body->integrateLinear(deltaTime);
+		body->integrateAngular(deltaTime);
 	}
 
 
 	//window boundary
-	for(auto particle:particles){
-		if((particle->position.y > (Graphics::windowHeight - particle->radius))){
-			particle->position.y = Graphics::windowHeight - particle->radius;	//putting particle on the edges if it exceds
-			particle->velocity.y *= -0.9;						//making the collision not perfectly elastic
-		}else if(particle->position.y < (0 + particle->radius)){
-			particle->position.y = particle->radius;
-			particle->velocity.y *= -0.9;
+	for(auto body:bodies){
+		if(body->shape->getShapeType() == CIRCLE){
+			Circle* c = (Circle* ) body->shape;
+			if((body->position.y > (Graphics::windowHeight - c->radius))){
+				body->position.y = Graphics::windowHeight - c->radius;	//putting body on the edges if it exceds
+				body->velocity.y *= -0.9;						//making the collision not perfectly elastic
+			}else if(body->position.y < (0 + c->radius)){
+				body->position.y = c->radius;
+				body->velocity.y *= -0.9;
+			}
+			if(body->position.x > (Graphics::windowWidth - c->radius)){
+				body->position.x = Graphics::windowWidth - c->radius;	//putting body on the edges if it exceds
+				body->velocity.x *= -0.9;						//making the collision not perfectly elastic
+			}else if(body->position.x < (0 + c->radius)){
+				body->position.x = c->radius;
+				body->velocity.x *= -0.9;
+			}	
 		}
-		if(particle->position.x > (Graphics::windowWidth - particle->radius)){
-			particle->position.x = Graphics::windowWidth - particle->radius;	//putting particle on the edges if it exceds
-			particle->velocity.x *= -0.9;						//making the collision not perfectly elastic
-		}else if(particle->position.x < (0 + particle->radius)){
-			particle->position.x = particle->radius;
-			particle->velocity.x *= -0.9;
-		}	
 	}
 }
 void Application::render(){
@@ -254,7 +157,7 @@ void Application::render(){
 	
 
 	if(drawMouseImpulseLine){
-		Graphics::DrawLine(particles[mouseImpulseParticleIndex]->position.x, particles[mouseImpulseParticleIndex]->position.y, mousePos.x, mousePos.y, 0xff0000ff);
+		Graphics::DrawLine(bodies[mouseImpulseBodyIndex]->position.x, bodies[mouseImpulseBodyIndex]->position.y, mousePos.x, mousePos.y, 0xff0000ff);
 	}
 
 	//render springs
@@ -263,14 +166,16 @@ void Application::render(){
 		Graphics::DrawLine(sm.sp->anchor->x, sm.sp->anchor->y,sm.bob->position.x, sm.bob->position.y,0xffffffff);
 	}	
 	//render the particcles
-	for(auto particle:particles)
-		Graphics::DrawFillCircle(particle->position.x,particle->position.y,particle->radius,0xffffffff);
-	
+	for(auto body:bodies)
+		if(body->shape->getShapeType() == CIRCLE){
+			Circle* c = (Circle* )body->shape;
+			Graphics::DrawCircle(body->position.x,body->position.y,c->radius,body->angle,0xffffffff);
+		}
 	Graphics::RenderFrame();	
 }
 void Application::destroy(){
-	for(auto particle:particles){
-		delete particle;
+	for(auto body:bodies){
+		delete body;
 	}
 	for(auto sm:springMassSystems){
 		delete sm.sp;
