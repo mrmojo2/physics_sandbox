@@ -29,7 +29,7 @@ float Circle::getMOI(float mass) const {
 //				Polygon Shape Implementation
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Polygon::Polygon(std::vector<Vec2> vertices):vertices(vertices){}
+Polygon::Polygon(std::vector<Vec2> vertices):localVertices(vertices),worldVertices(vertices){}
 
 Polygon::~Polygon(){}
 
@@ -42,14 +42,30 @@ float Polygon::getMOI(float mass) const {
 }
 
 Shape* Polygon::getPointer() const {
-	return new Polygon(this->vertices);
+	return new Polygon(this->localVertices);
 }
+
+void Polygon::updateWorldVertices(float angle, const Vec2& position){
+	for(auto lv: localVertices){
+		Vec2 wv = lv.rotate(angle) + position;
+		worldVertices.push_back(wv);
+	}
+}
+
+void Polygon::clearWorldVertices(){
+	worldVertices.clear();
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //				BOX Shape Implementation
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Box::Box(float width, float height): width(width),height(height){
+	localVertices.push_back(Vec2( -width/2, -height/2));
+	localVertices.push_back(Vec2( width/2, -height/2));
+	localVertices.push_back(Vec2( width/2, height/2));
+	localVertices.push_back(Vec2( -width/2, height/2));
 }
 
 Box::~Box(){}

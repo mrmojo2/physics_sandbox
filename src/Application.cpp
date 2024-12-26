@@ -13,8 +13,13 @@ bool Application::isRunning(){
 void Application::setup(){
 	running = Graphics::OpenWindow();
 	
-	Body* b1 = new Body(Circle(100),500,200,2);
+	Body* b1 = new Body(Circle(100),700,500,2);
+	Body* b3 = new Body(Box(200,200),1000,200,2);
+	Body* b2 = new Body(Box(100,100),500,200,2);
 	bodies.push_back(b1);
+	bodies.push_back(b2);
+	bodies.push_back(b3);
+
 }
 
 void Application::input(){
@@ -110,7 +115,7 @@ void Application::update(){
 	//apply forces to the bodies
 	for(auto body:bodies){
 		//weight force
-		body->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*body->mass));
+		//body->addForce(Vec2(0.0,9.8*PIXELS_PER_METER*body->mass));
 		
 		//pushForce from keyboard
 		body->addForce(pushForce);
@@ -124,10 +129,16 @@ void Application::update(){
 	}
 
 
-	//perform integration
+	//perform integration, transformation and rotation
 	for(auto body: bodies){
 		body->integrateLinear(deltaTime);
 		body->integrateAngular(deltaTime);
+
+		bool isPolygon = body->shape->getShapeType() == POLYGON ||  body->shape->getShapeType() == BOX;
+		if(isPolygon){
+			Polygon* p = (Polygon* ) body->shape;
+			p->updateWorldVertices(body->angle, body->position);
+		}
 	}
 
 
@@ -165,12 +176,17 @@ void Application::render(){
 		Graphics::DrawFillCircle(sm.sp->anchor->x, sm.sp->anchor->y,2,0xff0011e3);
 		Graphics::DrawLine(sm.sp->anchor->x, sm.sp->anchor->y,sm.bob->position.x, sm.bob->position.y,0xffffffff);
 	}	
-	//render the particcles
-	for(auto body:bodies)
+	//render the bodies
+	for(auto body:bodies){
 		if(body->shape->getShapeType() == CIRCLE){
 			Circle* c = (Circle* )body->shape;
 			Graphics::DrawCircle(body->position.x,body->position.y,c->radius,body->angle,0xffffffff);
+		}else if(body->shape->getShapeType() == BOX){
+			Box* b = (Box* )body->shape;
+			Graphics::DrawPolygon(body->position.x, body->position.y, b->worldVertices,0xffffffff);
+			b->clearWorldVertices();
 		}
+	}
 	Graphics::RenderFrame();	
 }
 void Application::destroy(){

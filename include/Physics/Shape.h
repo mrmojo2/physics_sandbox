@@ -33,7 +33,8 @@ public:
 
 class Polygon:public Shape{
 public:
-	std::vector<Vec2> vertices;
+	std::vector<Vec2> localVertices;
+	std::vector<Vec2> worldVertices;
 
 	Polygon(std::vector<Vec2> vertices);
 	Polygon()=default;
@@ -41,6 +42,8 @@ public:
 	ShapeType getShapeType() const;
 	Shape* getPointer() const;
 	float getMOI(float mass) const;
+	void updateWorldVertices(float angle, const Vec2& position);
+	void clearWorldVertices();
 };
 
 class Box:public Polygon {
